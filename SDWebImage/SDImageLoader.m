@@ -151,3 +151,4 @@ UIImage * _Nullable SDImageLoaderDecodeProgressiveImageData(NSData * _Nonnull im
 }
 
 SDWebImageContextOption const SDWebImageContextLoaderCachedImage = @"loaderCachedImage";
+SDWebImageContextOption const SDWebImageContextLoaderURLIsBlock = @"SDWebImageContextLoaderURLIsBlock";

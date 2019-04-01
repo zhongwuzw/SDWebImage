@@ -7,10 +7,14 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "SDWebImageDefine.h"
 
 @protocol SDWebImageOperation <NSObject>
 
 - (void)cancel;
+
+@optional
+- (SDWebImageContext *)operationContext;
 
 @end
 

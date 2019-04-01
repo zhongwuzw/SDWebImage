@@ -247,7 +247,7 @@ static id<SDImageLoader> _defaultImageLoader;
                 // Image refresh hit the NSURLCache cache, do not call the completion block
             } else if (error) {
                 [self callCompletionBlockForOperation:operation completion:completedBlock error:error url:url];
-                BOOL shouldBlockFailedURL = [self shouldBlockFailedURLWithURL:url error:error];
+                BOOL shouldBlockFailedURL = [self shouldBlockFailedURLWithOperation:operation URL:url error:error];
                 
                 if (shouldBlockFailedURL) {
                     SD_LOCK(self.failedURLsLock);
@@ -367,13 +367,24 @@ static id<SDImageLoader> _defaultImageLoader;
     });
 }
 
-- (BOOL)shouldBlockFailedURLWithURL:(nonnull NSURL *)url
-                              error:(nonnull NSError *)error {
+- (BOOL)shouldBlockFailedURLWithOperation:(id<SDWebImageOperation>)operation
+                                      URL:(nonnull NSURL *)url
+                                    error:(nonnull NSError *)error {
     // Check whether we should block failed url
-    BOOL shouldBlockFailedURL;
+    BOOL shouldBlockFailedURL = NO;
+    // 1. If users set the delegate, we pass the control to users.
     if ([self.delegate respondsToSelector:@selector(imageManager:shouldBlockFailedURL:withError:)]) {
         shouldBlockFailedURL = [self.delegate imageManager:self shouldBlockFailedURL:url withError:error];
     } else {
+        // 2. If developers has some custom block policy, pass control to developers
+        if ([operation respondsToSelector:@selector(operationContext)]) {
+            SDWebImageContext *context = [operation operationContext];
+            NSNumber *isBlock = context[SDWebImageContextLoaderURLIsBlock];
+            if (isBlock) {
+                return [isBlock boolValue];
+            }
+        }
+        // 3. Fall back to default handler.
         // Filter the error domain and check error codes
         if ([error.domain isEqualToString:NSURLErrorDomain]) {
             shouldBlockFailedURL = (   error.code != NSURLErrorNotConnectedToInternet
@@ -384,8 +395,6 @@ static id<SDImageLoader> _defaultImageLoader;
                                     && error.code != NSURLErrorCannotFindHost
                                     && error.code != NSURLErrorCannotConnectToHost
                                     && error.code != NSURLErrorNetworkConnectionLost);
-        } else {
-            shouldBlockFailedURL = NO;
         }
     }
     

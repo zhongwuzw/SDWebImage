@@ -22,6 +22,11 @@ typedef void(^SDImageLoaderCompletedBlock)(UIImage * _Nullable image, NSData * _
  */
 FOUNDATION_EXPORT SDWebImageContextOption _Nonnull const SDWebImageContextLoaderCachedImage;
 
+/**
+ `SDWebImageManager` can use this options to decide wether block url. @YES to block, @NO for not.
+ */
+FOUNDATION_EXPORT SDWebImageContextOption _Nonnull const SDWebImageContextLoaderURLIsBlock;
+
 #pragma mark - Helper method
 
 /**
